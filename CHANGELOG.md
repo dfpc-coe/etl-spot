@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.1.0
+
+- :tada: Improve Schema output and fix CallSign Bug
+
 ### v1.0.3
 
 - :bug: Improved Callsign & ID
