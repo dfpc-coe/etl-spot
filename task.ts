@@ -59,7 +59,24 @@ export default class Task extends ETL {
             return {
                 type: 'object',
                 required: [],
-                properties: {}
+                properties: {
+                    messengerName: {
+                        type: 'string'
+                        description: 'Human Readable name of the Spot Messenger'
+                    },
+                    messengerId: {
+                        type: 'string',
+                        description: 'Device ID of the Spot Messenger'
+                    },
+                    modelId: {
+                        type: 'string',
+                        description: 'Model ID of the Spot Messenger'
+                    },
+                    batteryState: {
+                        type: 'string',
+                        description: 'Battery level as reported by the device'
+                    }
+                }
             }
         }
     }
