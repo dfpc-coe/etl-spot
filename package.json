@@ -1,8 +1,8 @@
 {
-    "name": "coe-inreach",
+    "name": "coe-spot",
     "type": "module",
     "prviate": true,
-    "version": "2.0.0",
+    "version": "1.0.0",
     "description": "",
     "main": "index.js",
     "scripts": {
