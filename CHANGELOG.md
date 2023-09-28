@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.0.3
+
+- :bug: Improved Callsign & ID
+
 ### v1.0.2
 
 - :bug: Remove Debug Code
