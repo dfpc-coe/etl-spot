@@ -93,14 +93,14 @@ export default class Task extends ETL {
                 console.log(`ok - ${share.ShareId} has ${xml.response.feedMessageResponse[0].count[0]} messages`);
                 for (const message of xml.response.feedMessageResponse[0].messages[0].message) {
                     const feat: Feature<Geometry, { [name: string]: any; }> = {
-                        id: `spot-${share.CallSign || message.messengerId[0]}`,
+                        id: `spot-${message.messengerId[0]}`,
                         type: 'Feature',
                         properties: {
                             messengerName: message.messengerName[0],
                             messengerId: message.messengerId[0],
                             modelId: message.modelId[0],
                             batteryState: message.batteryState[0],
-                            callsign: share.CallSign,
+                            callsign: share.CallSign || message.messengerName[0],
                             time: new Date(message.dateTime[0]),
                             start: new Date(message.dateTime[0])
                         },
