@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.0.2
+
+- :bug: Remove Debug Code
+
 ### v1.0.1
 
 - :bug: Fallback to MessangerId if CallSign is not set
