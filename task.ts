@@ -73,7 +73,6 @@ export default class Task extends ETL {
         const obtains: Array<Promise<Feature[]>> = [];
         for (const share of layer.environment.SPOT_MAP_SHARES) {
             obtains.push((async (share: Share): Promise<Feature[]> => {
-                if (!share.CallSign) share.CallSign = share.ShareId;
                 console.log(`ok - requesting ${share.ShareId}`);
 
                 const url = new URL(`/spot-main-web/consumer/rest-api/2.0/public/feed/${share.ShareId}/latest.xml`, 'https://api.findmespot.com')
