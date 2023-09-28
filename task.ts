@@ -67,9 +67,6 @@ export default class Task extends ETL {
     async control(): Promise<void> {
         const layer = await this.layer();
 
-        //DEBUG
-        layer.environment.SPOT_MAP_SHARES = JSON.parse(process.env.SPOT_MAP_SHARES)
-
         if (!layer.environment.SPOT_MAP_SHARES) throw new Error('No SPOT_MAP_SHARES Provided');
         if (!Array.isArray(layer.environment.SPOT_MAP_SHARES)) throw new Error('SPOT_MAP_SHARES must be an array');
 
