@@ -61,7 +61,7 @@ export default class Task extends ETL {
                 required: [],
                 properties: {
                     messengerName: {
-                        type: 'string'
+                        type: 'string',
                         description: 'Human Readable name of the Spot Messenger'
                     },
                     messengerId: {
