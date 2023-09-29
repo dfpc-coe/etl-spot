@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.2.0
+
+- :rocket: Only look at messages within the last 30 minutes
+
 ### v1.1.1
 
 - :bug: Syntax Bug
