@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.2.1
+
+- :bug: Add Time parsing
+
 ### v1.2.0
 
 - :rocket: Only look at messages within the last 30 minutes
