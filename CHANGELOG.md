@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.3.0
+
+- :tada: Add `dateTime` field to schema and returned results
+
 ### v1.2.1
 
 - :bug: Add Time parsing

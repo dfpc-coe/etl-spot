@@ -65,6 +65,10 @@ export default class Task extends ETL {
                         type: 'string',
                         description: 'Human Readable name of the Spot Messenger'
                     },
+                    dateTime: {
+                        type: 'string',
+                        description: 'Time at which the message was recieved'
+                    },
                     messengerId: {
                         type: 'string',
                         description: 'Device ID of the Spot Messenger'
@@ -119,6 +123,7 @@ export default class Task extends ETL {
                             messengerId: message.messengerId[0],
                             modelId: message.modelId[0],
                             batteryState: message.batteryState[0],
+                            dateTime: message.dateTime[0],
                             callsign: share.CallSign || message.messengerName[0],
                             time: new Date(message.dateTime[0]),
                             start: new Date(message.dateTime[0])
