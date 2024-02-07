@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.0.0
+
+- :rocket: Update to latest token format
+
 ### v1.3.0
 
 - :tada: Add `dateTime` field to schema and returned results

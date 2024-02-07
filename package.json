@@ -22,7 +22,7 @@
         "typescript": "^5.0.4"
     },
     "dependencies": {
-        "@tak-ps/etl": "^2.0.1",
+        "@tak-ps/etl": "^3.0.1",
         "@types/geojson": "^7946.0.10",
         "moment": "^2.29.4",
         "xml2js": "^0.6.2"
