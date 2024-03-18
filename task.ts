@@ -111,6 +111,7 @@ export default class Task extends ETL {
                 if (!xml.response || !xml.response.feedMessageResponse) throw new Error('XML Parse Error: FeedMessageResponse not found');
                 if (!xml.response.feedMessageResponse.length) return features;
 
+                console.log(JSON.stringify(xml.response.feedMessageResponse))
                 console.log(`ok - ${share.ShareId} has ${xml.response.feedMessageResponse[0].count[0]} messages`);
                 for (const message of xml.response.feedMessageResponse[0].messages[0].message) {
                     if (moment().diff(moment(message.dateTime[0]), 'minutes') > 30) continue;
