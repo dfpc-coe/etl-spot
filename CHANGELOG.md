@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.1.0
+
+- :rocket: Add initial support for timezone overrides
+
 ### v2.0.1
 
 - :arrow_up: Update Core Deps

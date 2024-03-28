@@ -1,9 +1,10 @@
 import fs from 'node:fs';
+import { Type } from '@sinclair/typebox';
 import { FeatureCollection, Feature, Geometry } from 'geojson';
 import xml2js from 'xml2js';
 import { JSONSchema6 } from 'json-schema';
 import ETL, { Event, SchemaType } from '@tak-ps/etl';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 try {
     const dotfile = new URL('.env', import.meta.url);
@@ -23,66 +24,46 @@ export interface Share {
 export default class Task extends ETL {
     static async schema(type: SchemaType = SchemaType.Input): Promise<JSONSchema6> {
         if (type === SchemaType.Input) {
-            return {
-                type: 'object',
-                required: ['SPOT_MAP_SHARES'],
-                properties: {
-                    'SPOT_MAP_SHARES': {
-                        type: 'array',
-                        description: 'Inreach Share IDs to pull data from',
-                        // @ts-ignore
-                        display: 'table',
-                        items: {
-                            type: 'object',
-                            required: [
-                                'ShareID',
-                            ],
-                            properties: {
-                                CallSign: {
-                                    type: 'string',
-                                    description: 'Human Readable Name of the Operator - Used as the callsign in TAK'
-                                },
-                                ShareId: {
-                                    type: 'string',
-                                    description: 'Spot Share ID'
-                                }
-                            }
-                        }
-                    },
-                    'DEBUG': {
-                        type: 'boolean',
-                        default: false,
-                        description: 'Print results in logs'
-                    }
-                }
-            }
+            return Type.Object({
+                'SPOT_TIMEZONE': Type.Optional(Type.String({
+                    description: 'Convert timezones to a given value',
+                    format: 'timezone'
+                })),
+                'SPOT_MAP_SHARES': Type.Array(Type.Object({
+                    CallSign: Type.Optional(Type.String({
+                        description: 'Human Readable Name of the Operator - Used as the callsign in TAK'
+                    })),
+                    ShareId: Type.String({
+                        description: 'Spot Share ID'
+                    })
+                }), {
+                    description: 'Inreach Share IDs to pull data from',
+                    // @ts-ignore
+                    display: 'table',
+                }),
+                'DEBUG': Type.Boolean({
+                    default: false,
+                    description: 'Print results in logs'
+                })
+            })
         } else {
-            return {
-                type: 'object',
-                required: [],
-                properties: {
-                    messengerName: {
-                        type: 'string',
-                        description: 'Human Readable name of the Spot Messenger'
-                    },
-                    dateTime: {
-                        type: 'string',
-                        description: 'Time at which the message was recieved'
-                    },
-                    messengerId: {
-                        type: 'string',
-                        description: 'Device ID of the Spot Messenger'
-                    },
-                    modelId: {
-                        type: 'string',
-                        description: 'Model ID of the Spot Messenger'
-                    },
-                    batteryState: {
-                        type: 'string',
-                        description: 'Battery level as reported by the device'
-                    }
-                }
-            }
+            return Type.Object({
+                messengerName: Type.String({
+                    description: 'Human Readable name of the Spot Messenger'
+                }),
+                dateTime: Type.String({
+                    description: 'Time at which the message was recieved'
+                }),
+                messengerId: Type.String({
+                    description: 'Device ID of the Spot Messenger'
+                }),
+                modelId: Type.String({
+                    description: 'Model ID of the Spot Messenger'
+                }),
+                batteryState: Type.String({
+                    description: 'Battery level as reported by the device'
+                })
+            })
         }
     }
 
@@ -134,6 +115,10 @@ export default class Task extends ETL {
                             coordinates: [ Number(message.longitude[0]), Number(message.latitude[0]), Number(message.altitude[0]) ]
                         }
                     };
+
+                    if (layer.environment.SPOT_TIMEZONE) {
+                        feat.properties.dateTime = moment(feat.properties.dateTime).tz(String(layer.environment.SPOT_TIMEZONE)).format('YYYY-MM-DD HH:mm z');
+                    }
 
                     features.push(feat);
                 }
