@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.1.1
+
+- :rocket: Fix `date-time` format
+
 ### v2.1.0
 
 - :rocket: Add initial support for timezone overrides

@@ -52,7 +52,7 @@ export default class Task extends ETL {
                     description: 'Human Readable name of the Spot Messenger'
                 }),
                 dateTime: Type.String({
-                    description: 'Time at which the message was recieved'
+                    description: 'Time at which the message was recieved',
                     format: 'date-time'
                 }),
                 messengerId: Type.String({
