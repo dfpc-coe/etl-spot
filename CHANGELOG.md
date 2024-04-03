@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.2.0
+
+- :rocket: Continue to work on auto-timezone 
+
 ### v2.1.1
 
 - :rocket: Fix `date-time` format

@@ -25,10 +25,6 @@ export default class Task extends ETL {
     static async schema(type: SchemaType = SchemaType.Input): Promise<JSONSchema6> {
         if (type === SchemaType.Input) {
             return Type.Object({
-                'SPOT_TIMEZONE': Type.Optional(Type.String({
-                    description: 'Convert timezones to a given value',
-                    format: 'timezone'
-                })),
                 'SPOT_MAP_SHARES': Type.Array(Type.Object({
                     CallSign: Type.Optional(Type.String({
                         description: 'Human Readable Name of the Operator - Used as the callsign in TAK'
@@ -116,10 +112,6 @@ export default class Task extends ETL {
                             coordinates: [ Number(message.longitude[0]), Number(message.latitude[0]), Number(message.altitude[0]) ]
                         }
                     };
-
-                    if (layer.environment.SPOT_TIMEZONE) {
-                        feat.properties.dateTime = moment(feat.properties.dateTime).tz(String(layer.environment.SPOT_TIMEZONE)).format('YYYY-MM-DD HH:mm z');
-                    }
 
                     features.push(feat);
                 }
