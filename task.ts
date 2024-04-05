@@ -1,8 +1,7 @@
 import fs from 'node:fs';
-import { Type } from '@sinclair/typebox';
+import { Type, TSchema } from '@sinclair/typebox';
 import { FeatureCollection, Feature, Geometry } from 'geojson';
 import xml2js from 'xml2js';
-import { JSONSchema6 } from 'json-schema';
 import ETL, { Event, SchemaType } from '@tak-ps/etl';
 import moment from 'moment-timezone';
 
@@ -22,7 +21,7 @@ export interface Share {
 }
 
 export default class Task extends ETL {
-    static async schema(type: SchemaType = SchemaType.Input): Promise<JSONSchema6> {
+    static async schema(type: SchemaType = SchemaType.Input): Promise<TSchema> {
         if (type === SchemaType.Input) {
             return Type.Object({
                 'SPOT_MAP_SHARES': Type.Array(Type.Object({

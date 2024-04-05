@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.3.1
+
+- :bug: Fix Build
+
 ### v2.3.0
 
 - :rocket: Add support for config defined DateTime
