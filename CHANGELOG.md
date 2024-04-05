@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.3.0
+
+- :rocket: Add support for config defined DateTime
+
 ### v2.2.0
 
 - :rocket: Continue to work on auto-timezone 
