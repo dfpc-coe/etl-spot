@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.4.0
+
+- :rocket: Update to use helpers and metadata
+
 ### v2.3.1
 
 - :bug: Fix Build

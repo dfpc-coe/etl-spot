@@ -2,18 +2,8 @@ import fs from 'node:fs';
 import { Type, TSchema } from '@sinclair/typebox';
 import { FeatureCollection, Feature, Geometry } from 'geojson';
 import xml2js from 'xml2js';
-import ETL, { Event, SchemaType } from '@tak-ps/etl';
+import ETL, { Event, SchemaType, handler as internal, local, env } from '@tak-ps/etl';
 import moment from 'moment-timezone';
-
-try {
-    const dotfile = new URL('.env', import.meta.url);
-
-    fs.accessSync(dotfile);
-
-    Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
-} catch (err) {
-    console.log('ok - no .env file loaded');
-}
 
 export interface Share {
     ShareId: string;
@@ -96,14 +86,16 @@ export default class Task extends ETL {
                         id: `spot-${message.messengerId[0]}`,
                         type: 'Feature',
                         properties: {
-                            messengerName: message.messengerName[0],
-                            messengerId: message.messengerId[0],
-                            modelId: message.modelId[0],
-                            batteryState: message.batteryState[0],
-                            dateTime: message.dateTime[0],
                             callsign: share.CallSign || message.messengerName[0],
                             time: new Date(message.dateTime[0]),
-                            start: new Date(message.dateTime[0])
+                            start: new Date(message.dateTime[0]),
+                            metadata: {
+                                messengerName: message.messengerName[0],
+                                messengerId: message.messengerId[0],
+                                modelId: message.modelId[0],
+                                batteryState: message.batteryState[0],
+                                dateTime: message.dateTime[0],
+                            }
                         },
                         geometry: {
                             type: 'Point',
@@ -132,15 +124,8 @@ export default class Task extends ETL {
     }
 }
 
+env(import.meta.url)
+await local(new Task(), import.meta.url);
 export async function handler(event: Event = {}) {
-    if (event.type === 'schema:input') {
-        return await Task.schema(SchemaType.Input);
-    } else if (event.type === 'schema:output') {
-        return await Task.schema(SchemaType.Output);
-    } else {
-        const task = new Task();
-        await task.control();
-    }
+    return await internal(new Task(), event);
 }
-
-if (import.meta.url === `file://${process.argv[1]}`) handler();
