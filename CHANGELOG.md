@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.4.2
+
+- :arrow_up: Schema method shouldn't be static
+
 ### v2.4.1
 
 - :arrow_up: Update to use helpers and metadata
