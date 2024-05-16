@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import { Type, TSchema } from '@sinclair/typebox';
 import { FeatureCollection, Feature, Geometry } from 'geojson';
 import xml2js from 'xml2js';
@@ -22,9 +21,7 @@ export default class Task extends ETL {
                         description: 'Spot Share ID'
                     })
                 }), {
-                    description: 'Inreach Share IDs to pull data from',
-                    // @ts-ignore
-                    display: 'table',
+                    description: 'Spot Share IDs to pull data from',
                 }),
                 'DEBUG': Type.Boolean({
                     default: false,

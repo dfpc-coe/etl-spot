@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.4.3
+
+- :arrow_up: Remove legacy ESLint Config file
+
 ### v2.4.2
 
 - :arrow_up: Schema method shouldn't be static
