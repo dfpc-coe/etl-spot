@@ -14,12 +14,12 @@ export default class Task extends ETL {
         if (type === SchemaType.Input) {
             return Type.Object({
                 'SPOT_MAP_SHARES': Type.Array(Type.Object({
-                    CallSign: Type.Optional(Type.String({
-                        description: 'Human Readable Name of the Operator - Used as the callsign in TAK'
-                    })),
                     ShareId: Type.String({
                         description: 'Spot Share ID'
-                    })
+                    }),
+                    Password: Type.Optional(Type.String({
+                        description: 'Optional Password for the Share Stream'
+                    })),
                 }), {
                     description: 'Spot Share IDs to pull data from',
                 }),
@@ -62,6 +62,7 @@ export default class Task extends ETL {
                 console.log(`ok - requesting ${share.ShareId}`);
 
                 const url = new URL(`/spot-main-web/consumer/rest-api/2.0/public/feed/${share.ShareId}/latest.xml`, 'https://api.findmespot.com')
+                if (share.Password) url.searchParams.append('feedPassword', share.Password);
 
                 const kmlres = await fetch(url);
                 const body = await kmlres.text();

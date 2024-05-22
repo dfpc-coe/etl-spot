@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v2.5.0
+
+- :arrow_up: Update all core deps
+- :tada: Add `Password` support and drop callsign as multiple devices can exist on a single account
+
 ### v2.4.3
 
 - :arrow_up: Remove legacy ESLint Config file
