@@ -6,7 +6,7 @@ import moment from 'moment-timezone';
 
 export interface Share {
     ShareId: string;
-    CallSign?: string;
+    Password?: string;
 }
 
 export default class Task extends ETL {
@@ -84,7 +84,7 @@ export default class Task extends ETL {
                         id: `spot-${message.messengerId[0]}`,
                         type: 'Feature',
                         properties: {
-                            callsign: share.CallSign || message.messengerName[0],
+                            callsign: message.messengerName[0],
                             time: new Date(message.dateTime[0]),
                             start: new Date(message.dateTime[0]),
                             metadata: {

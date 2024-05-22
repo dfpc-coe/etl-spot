@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.5.1
+
+- :bug: Update Share type
+
 ### v2.5.0
 
 - :arrow_up: Update all core deps
