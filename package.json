@@ -2,7 +2,7 @@
     "name": "coe-spot",
     "type": "module",
     "private": true,
-    "version": "2.5.1",
+    "version": "2.6.0",
     "description": "",
     "main": "index.js",
     "scripts": {
