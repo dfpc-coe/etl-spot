@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.6.0
+
+- :rocket: Handle XML Error Messages
+
 ### v2.5.1
 
 - :bug: Update Share type

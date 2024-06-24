@@ -73,7 +73,28 @@ export default class Task extends ETL {
 
                 const xml = await xml2js.parseStringPromise(body);
 
-                if (!xml.response || !xml.response.feedMessageResponse) throw new Error('XML Parse Error: FeedMessageResponse not found');
+                if (!xml.response) throw new Error('XML Parse Error: Response not found');
+
+                if (xml.response.errors && Array.isArray(xml.response.errors)) {
+                    const unknown: Error[] = []
+                    for (let err of xml.response.errors) {
+                        if (err.error && Array.isArray(err.error)) {
+                            err = err.error[0];
+                            if (err.code[0] === 'E-0195') {
+                                console.log(err.description[0]);
+                                xml.response.feedMessageResponse = [];
+                            } else {
+                                unknown.push(new Error(err.desription[0]));
+                            }
+                        }
+                    }
+
+                    if (unknown.length) {
+                        throw new Error(unknown.map((e) => { return e.message }).join(','));
+                    }
+                }
+
+                if (!xml.response.feedMessageResponse) throw new Error('XML Parse Error: FeedMessageResponse not found');
                 if (!xml.response.feedMessageResponse.length) return features;
 
                 console.log(`ok - ${share.ShareId} has ${xml.response.feedMessageResponse[0].count[0]} messages`);
