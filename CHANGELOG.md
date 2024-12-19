@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.7.0
+
+- :rocket: Update to latest ETL Base Version
+
 ### v2.6.0
 
 - :rocket: Handle XML Error Messages

@@ -1,7 +1,6 @@
-import { Type, TSchema } from '@sinclair/typebox';
-import { FeatureCollection, Feature, Geometry } from 'geojson';
+import { Static, Type, TSchema } from '@sinclair/typebox';
 import xml2js from 'xml2js';
-import ETL, { Event, SchemaType, handler as internal, local, env } from '@tak-ps/etl';
+import ETL, { Event, SchemaType, handler as internal, local, InputFeatureCollection, InputFeature } from '@tak-ps/etl';
 import moment from 'moment-timezone';
 
 export interface Share {
@@ -10,6 +9,8 @@ export interface Share {
 }
 
 export default class Task extends ETL {
+    static name = 'etl-spot';
+
     async schema(type: SchemaType = SchemaType.Input): Promise<TSchema> {
         if (type === SchemaType.Input) {
             return Type.Object({
@@ -56,9 +57,9 @@ export default class Task extends ETL {
         if (!layer.environment.SPOT_MAP_SHARES) throw new Error('No SPOT_MAP_SHARES Provided');
         if (!Array.isArray(layer.environment.SPOT_MAP_SHARES)) throw new Error('SPOT_MAP_SHARES must be an array');
 
-        const obtains: Array<Promise<Feature[]>> = [];
+        const obtains: Array<Promise<Static<typeof InputFeature>[]>> = [];
         for (const share of layer.environment.SPOT_MAP_SHARES) {
-            obtains.push((async (share: Share): Promise<Feature[]> => {
+            obtains.push((async (share: Share): Promise<Static<typeof InputFeature>[]> => {
                 console.log(`ok - requesting ${share.ShareId}`);
 
                 const url = new URL(`/spot-main-web/consumer/rest-api/2.0/public/feed/${share.ShareId}/latest.xml`, 'https://api.findmespot.com')
@@ -67,7 +68,7 @@ export default class Task extends ETL {
                 const kmlres = await fetch(url);
                 const body = await kmlres.text();
 
-                const features: Feature[] = [];
+                const features: Static<typeof InputFeature>[] = [];
 
                 if (!body.trim()) return features;
 
@@ -101,13 +102,13 @@ export default class Task extends ETL {
                 for (const message of xml.response.feedMessageResponse[0].messages[0].message) {
                     if (moment().diff(moment(message.dateTime[0]), 'minutes') > 30) continue;
 
-                    const feat: Feature<Geometry, { [name: string]: any; }> = {
+                    const feat: Static<typeof InputFeature> = {
                         id: `spot-${message.messengerId[0]}`,
                         type: 'Feature',
                         properties: {
                             callsign: message.messengerName[0],
-                            time: new Date(message.dateTime[0]),
-                            start: new Date(message.dateTime[0]),
+                            time: new Date(message.dateTime[0]).toISOString(),
+                            start: new Date(message.dateTime[0]).toISOString(),
                             metadata: {
                                 messengerName: message.messengerName[0],
                                 messengerId: message.messengerId[0],
@@ -129,7 +130,7 @@ export default class Task extends ETL {
             })(share))
         }
 
-        const fc: FeatureCollection = {
+        const fc: Static<typeof InputFeatureCollection> = {
             type: 'FeatureCollection',
             features: []
         }
@@ -143,8 +144,7 @@ export default class Task extends ETL {
     }
 }
 
-env(import.meta.url)
-await local(new Task(), import.meta.url);
+await local(new Task(import.meta.url), import.meta.url);
 export async function handler(event: Event = {}) {
-    return await internal(new Task(), event);
+    return await internal(new Task(import.meta.url), event);
 }
