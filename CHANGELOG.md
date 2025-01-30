@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.8.0
+
+- :tada: Add Capabilities API
+
 ### v2.7.0
 
 - :rocket: Update to latest ETL Base Version

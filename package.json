@@ -22,7 +22,7 @@
     },
     "dependencies": {
         "@sinclair/typebox": "^0.34.0",
-        "@tak-ps/etl": "^6.5.1",
+        "@tak-ps/etl": "^7.1.1",
         "moment": "^2.30.1",
         "moment-timezone": "^0.5.45",
         "xml2js": "^0.6.2"

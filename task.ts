@@ -1,6 +1,6 @@
 import { Static, Type, TSchema } from '@sinclair/typebox';
 import xml2js from 'xml2js';
-import ETL, { Event, SchemaType, handler as internal, local, InputFeatureCollection, InputFeature } from '@tak-ps/etl';
+import ETL, { Event, SchemaType, handler as internal, local, InputFeatureCollection, InputFeature, DataFlowType, InvocationType } from '@tak-ps/etl';
 import moment from 'moment-timezone';
 
 export interface Share {
@@ -10,44 +10,53 @@ export interface Share {
 
 export default class Task extends ETL {
     static name = 'etl-spot';
+    static flow = [ DataFlowType.Incoming ];
+    static invocation = [ InvocationType.Schedule ];
 
-    async schema(type: SchemaType = SchemaType.Input): Promise<TSchema> {
-        if (type === SchemaType.Input) {
-            return Type.Object({
-                'SPOT_MAP_SHARES': Type.Array(Type.Object({
-                    ShareId: Type.String({
-                        description: 'Spot Share ID'
+    async schema(
+        type: SchemaType = SchemaType.Input,
+        flow: DataFlowType = DataFlowType.Incoming
+    ): Promise<TSchema> {
+        if (flow === DataFlowType.Incoming) {
+            if (type === SchemaType.Input) {
+                return Type.Object({
+                    'SPOT_MAP_SHARES': Type.Array(Type.Object({
+                        ShareId: Type.String({
+                            description: 'Spot Share ID'
+                        }),
+                        Password: Type.Optional(Type.String({
+                            description: 'Optional Password for the Share Stream'
+                        })),
+                    }), {
+                        description: 'Spot Share IDs to pull data from',
                     }),
-                    Password: Type.Optional(Type.String({
-                        description: 'Optional Password for the Share Stream'
-                    })),
-                }), {
-                    description: 'Spot Share IDs to pull data from',
-                }),
-                'DEBUG': Type.Boolean({
-                    default: false,
-                    description: 'Print results in logs'
+                    'DEBUG': Type.Boolean({
+                        default: false,
+                        description: 'Print results in logs'
+                    })
                 })
-            })
+            } else {
+                return Type.Object({
+                    messengerName: Type.String({
+                        description: 'Human Readable name of the Spot Messenger'
+                    }),
+                    dateTime: Type.String({
+                        description: 'Time at which the message was recieved',
+                        format: 'date-time'
+                    }),
+                    messengerId: Type.String({
+                        description: 'Device ID of the Spot Messenger'
+                    }),
+                    modelId: Type.String({
+                        description: 'Model ID of the Spot Messenger'
+                    }),
+                    batteryState: Type.String({
+                        description: 'Battery level as reported by the device'
+                    })
+                })
+            }
         } else {
-            return Type.Object({
-                messengerName: Type.String({
-                    description: 'Human Readable name of the Spot Messenger'
-                }),
-                dateTime: Type.String({
-                    description: 'Time at which the message was recieved',
-                    format: 'date-time'
-                }),
-                messengerId: Type.String({
-                    description: 'Device ID of the Spot Messenger'
-                }),
-                modelId: Type.String({
-                    description: 'Model ID of the Spot Messenger'
-                }),
-                batteryState: Type.String({
-                    description: 'Battery level as reported by the device'
-                })
-            })
+            return Type.Object({});
         }
     }
 
