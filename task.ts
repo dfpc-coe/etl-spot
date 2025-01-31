@@ -8,6 +8,23 @@ export interface Share {
     Password?: string;
 }
 
+const InputSchema = Type.Object({
+    'SPOT_MAP_SHARES': Type.Array(Type.Object({
+        ShareId: Type.String({
+            description: 'Spot Share ID'
+        }),
+        Password: Type.Optional(Type.String({
+            description: 'Optional Password for the Share Stream'
+        })),
+    }), {
+        description: 'Spot Share IDs to pull data from',
+    }),
+    'DEBUG': Type.Boolean({
+        default: false,
+        description: 'Print results in logs'
+    })
+})
+
 export default class Task extends ETL {
     static name = 'etl-spot';
     static flow = [ DataFlowType.Incoming ];
@@ -19,22 +36,7 @@ export default class Task extends ETL {
     ): Promise<TSchema> {
         if (flow === DataFlowType.Incoming) {
             if (type === SchemaType.Input) {
-                return Type.Object({
-                    'SPOT_MAP_SHARES': Type.Array(Type.Object({
-                        ShareId: Type.String({
-                            description: 'Spot Share ID'
-                        }),
-                        Password: Type.Optional(Type.String({
-                            description: 'Optional Password for the Share Stream'
-                        })),
-                    }), {
-                        description: 'Spot Share IDs to pull data from',
-                    }),
-                    'DEBUG': Type.Boolean({
-                        default: false,
-                        description: 'Print results in logs'
-                    })
-                })
+                return InputSchema;
             } else {
                 return Type.Object({
                     messengerName: Type.String({
@@ -61,13 +63,13 @@ export default class Task extends ETL {
     }
 
     async control(): Promise<void> {
-        const layer = await this.fetchLayer();
+        const env = await this.env(InputSchema);
 
-        if (!layer.environment.SPOT_MAP_SHARES) throw new Error('No SPOT_MAP_SHARES Provided');
-        if (!Array.isArray(layer.environment.SPOT_MAP_SHARES)) throw new Error('SPOT_MAP_SHARES must be an array');
+        if (!env.SPOT_MAP_SHARES) throw new Error('No SPOT_MAP_SHARES Provided');
+        if (!Array.isArray(env.SPOT_MAP_SHARES)) throw new Error('SPOT_MAP_SHARES must be an array');
 
         const obtains: Array<Promise<Static<typeof InputFeature>[]>> = [];
-        for (const share of layer.environment.SPOT_MAP_SHARES) {
+        for (const share of env.SPOT_MAP_SHARES) {
             obtains.push((async (share: Share): Promise<Static<typeof InputFeature>[]> => {
                 console.log(`ok - requesting ${share.ShareId}`);
 
