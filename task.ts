@@ -1,6 +1,7 @@
 import { Static, Type, TSchema } from '@sinclair/typebox';
+import { Feature } from '@tak-ps/node-cot';
 import xml2js from 'xml2js';
-import ETL, { Event, SchemaType, handler as internal, local, InputFeatureCollection, InputFeature, DataFlowType, InvocationType } from '@tak-ps/etl';
+import ETL, { Event, SchemaType, handler as internal, local, DataFlowType, InvocationType } from '@tak-ps/etl';
 import moment from 'moment-timezone';
 
 export interface Share {
@@ -68,9 +69,9 @@ export default class Task extends ETL {
         if (!env.SPOT_MAP_SHARES) throw new Error('No SPOT_MAP_SHARES Provided');
         if (!Array.isArray(env.SPOT_MAP_SHARES)) throw new Error('SPOT_MAP_SHARES must be an array');
 
-        const obtains: Array<Promise<Static<typeof InputFeature>[]>> = [];
+        const obtains: Array<Promise<Static<typeof Feature.InputFeature>[]>> = [];
         for (const share of env.SPOT_MAP_SHARES) {
-            obtains.push((async (share: Share): Promise<Static<typeof InputFeature>[]> => {
+            obtains.push((async (share: Share): Promise<Static<typeof Feature.InputFeature>[]> => {
                 console.log(`ok - requesting ${share.ShareId}`);
 
                 const url = new URL(`/spot-main-web/consumer/rest-api/2.0/public/feed/${share.ShareId}/latest.xml`, 'https://api.findmespot.com')
@@ -79,7 +80,7 @@ export default class Task extends ETL {
                 const kmlres = await fetch(url);
                 const body = await kmlres.text();
 
-                const features: Static<typeof InputFeature>[] = [];
+                const features: Static<typeof Feature.InputFeature>[] = [];
 
                 if (!body.trim()) return features;
 
@@ -113,7 +114,7 @@ export default class Task extends ETL {
                 for (const message of xml.response.feedMessageResponse[0].messages[0].message) {
                     if (moment().diff(moment(message.dateTime[0]), 'minutes') > 30) continue;
 
-                    const feat: Static<typeof InputFeature> = {
+                    const feat: Static<typeof Feature.InputFeature> = {
                         id: `spot-${message.messengerId[0]}`,
                         type: 'Feature',
                         properties: {
@@ -141,7 +142,7 @@ export default class Task extends ETL {
             })(share))
         }
 
-        const fc: Static<typeof InputFeatureCollection> = {
+        const fc: Static<typeof Feature.InputFeatureCollection> = {
             type: 'FeatureCollection',
             features: []
         }
