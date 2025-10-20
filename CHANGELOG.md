@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v3.1.0
+
+- :arrow_up: Update Core Deps
+
 ### v3.0.1
 
 - :bug: Fix Build Error
