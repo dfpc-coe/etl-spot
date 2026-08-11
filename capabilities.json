@@ -1,0 +1,27 @@
+{
+    "version": "1.0",
+    "name": "SPOT",
+    "description": "Ingests satellite GPS messenger positions from SPOT and posts them to the map.",
+    "compute": {
+        "memory": 512,
+        "timeout": 60
+    },
+    "permissions": [
+        {
+            "resource": "feature:*",
+            "required": true,
+            "description": "SPOT posts satellite GPS messenger positions to the map"
+        }
+    ],
+    "invocations": {
+        "incoming": {
+            "schedule": {
+                "description": "Polls SPOT for updated satellite messenger positions on a schedule.",
+                "default": {
+                    "enabled": true,
+                    "schedule": "rate(1 minute)"
+                }
+            }
+        }
+    }
+}
