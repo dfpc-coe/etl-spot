@@ -1,4 +1,5 @@
 import { Static, Type, TSchema } from '@sinclair/typebox';
+import { Value } from '@sinclair/typebox/value';
 import { Feature } from '@tak-ps/node-cot';
 import xml2js from 'xml2js';
 import ETL, { Event, SchemaType, handler as internal, local, DataFlowType, InvocationType } from '@tak-ps/etl';
@@ -26,6 +27,40 @@ const InputSchema = Type.Object({
     })
 })
 
+const SpotResponse = Type.Object({
+    response: Type.Object({
+        errors: Type.Optional(Type.Array(Type.Unknown())),
+        feedMessageResponse: Type.Optional(Type.Array(Type.Unknown()))
+    })
+});
+
+const SpotErrors = Type.Object({
+    error: Type.Array(Type.Object({
+        code: Type.Array(Type.String()),
+        description: Type.Array(Type.String())
+    }))
+});
+
+const SpotFeed = Type.Object({
+    count: Type.Array(Type.String()),
+    messages: Type.Array(Type.Object({
+        message: Type.Array(Type.Object({
+            dateTime: Type.Array(Type.String())
+        }))
+    }))
+});
+
+const SpotMessage = Type.Object({
+    messengerId: Type.Array(Type.String()),
+    messengerName: Type.Array(Type.String()),
+    modelId: Type.Array(Type.String()),
+    batteryState: Type.Array(Type.String()),
+    dateTime: Type.Array(Type.String()),
+    latitude: Type.Array(Type.String()),
+    longitude: Type.Array(Type.String()),
+    altitude: Type.Array(Type.String())
+});
+
 export default class Task extends ETL {
     static name = 'etl-spot';
     static flow = [ DataFlowType.Incoming ];
@@ -35,43 +70,35 @@ export default class Task extends ETL {
         type: SchemaType = SchemaType.Input,
         flow: DataFlowType = DataFlowType.Incoming
     ): Promise<TSchema> {
-        if (flow === DataFlowType.Incoming) {
-            if (type === SchemaType.Input) {
-                return InputSchema;
-            } else {
-                return Type.Object({
-                    messengerName: Type.String({
-                        description: 'Human Readable name of the Spot Messenger'
-                    }),
-                    dateTime: Type.String({
-                        description: 'Time at which the message was recieved',
-                        format: 'date-time'
-                    }),
-                    messengerId: Type.String({
-                        description: 'Device ID of the Spot Messenger'
-                    }),
-                    modelId: Type.String({
-                        description: 'Model ID of the Spot Messenger'
-                    }),
-                    batteryState: Type.String({
-                        description: 'Battery level as reported by the device'
-                    })
-                })
-            }
-        } else {
-            return Type.Object({});
-        }
+        if (flow !== DataFlowType.Incoming) return Type.Object({});
+        if (type === SchemaType.Input) return InputSchema;
+
+        return Type.Object({
+            messengerName: Type.String({
+                description: 'Human Readable name of the Spot Messenger'
+            }),
+            dateTime: Type.String({
+                description: 'Time at which the message was recieved',
+                format: 'date-time'
+            }),
+            messengerId: Type.String({
+                description: 'Device ID of the Spot Messenger'
+            }),
+            modelId: Type.String({
+                description: 'Model ID of the Spot Messenger'
+            }),
+            batteryState: Type.String({
+                description: 'Battery level as reported by the device'
+            })
+        })
     }
 
     async control(): Promise<void> {
         const env = await this.env(InputSchema);
 
-        if (!env.SPOT_MAP_SHARES) throw new Error('No SPOT_MAP_SHARES Provided');
-        if (!Array.isArray(env.SPOT_MAP_SHARES)) throw new Error('SPOT_MAP_SHARES must be an array');
-
         const obtains: Array<Promise<Static<typeof Feature.InputFeature>[]>> = [];
         for (const share of env.SPOT_MAP_SHARES) {
-            obtains.push((async (share: Share): Promise<Static<typeof Feature.InputFeature>[]> => {
+            obtains.push((async (): Promise<Static<typeof Feature.InputFeature>[]> => {
                 console.log(`ok - requesting ${share.ShareId}`);
 
                 const url = new URL(`/spot-main-web/consumer/rest-api/2.0/public/feed/${share.ShareId}/latest.xml`, 'https://api.findmespot.com')
@@ -84,35 +111,42 @@ export default class Task extends ETL {
 
                 if (!body.trim()) return features;
 
-                const xml = await xml2js.parseStringPromise(body);
+                const xml: unknown = await xml2js.parseStringPromise(body);
 
-                if (!xml.response) throw new Error('XML Parse Error: Response not found');
+                if (!Value.Check(SpotResponse, xml)) throw new Error('XML Parse Error: Response not found');
 
-                if (xml.response.errors && Array.isArray(xml.response.errors)) {
+                let feeds = xml.response.feedMessageResponse;
+
+                if (xml.response.errors) {
                     const unknown: Error[] = []
-                    for (let err of xml.response.errors) {
-                        if (err.error && Array.isArray(err.error)) {
-                            err = err.error[0];
-                            if (err.code[0] === 'E-0195') {
-                                console.log(err.description[0]);
-                                xml.response.feedMessageResponse = [];
-                            } else {
-                                unknown.push(new Error(err.desription[0]));
-                            }
+                    for (const errs of xml.response.errors) {
+                        if (!Value.Check(SpotErrors, errs)) continue;
+
+                        const err = errs.error[0];
+                        if (err.code[0] === 'E-0195') {
+                            console.log(err.description[0]);
+                            feeds = [];
+                        } else {
+                            unknown.push(new Error(err.description[0]));
                         }
                     }
 
-                    if (unknown.length) {
+                    if (unknown.length > 0) {
                         throw new Error(unknown.map((e) => { return e.message }).join(','));
                     }
                 }
 
-                if (!xml.response.feedMessageResponse) throw new Error('XML Parse Error: FeedMessageResponse not found');
-                if (!xml.response.feedMessageResponse.length) return features;
+                if (!feeds) throw new Error('XML Parse Error: FeedMessageResponse not found');
+                if (feeds.length === 0) return features;
 
-                console.log(`ok - ${share.ShareId} has ${xml.response.feedMessageResponse[0].count[0]} messages`);
-                for (const message of xml.response.feedMessageResponse[0].messages[0].message) {
+                const feed = feeds[0];
+                if (!Value.Check(SpotFeed, feed)) throw new Error('XML Parse Error: Unexpected FeedMessageResponse');
+
+                console.log(`ok - ${share.ShareId} has ${feed.count[0]} messages`);
+                for (const message of feed.messages[0].message) {
                     if (moment().diff(moment(message.dateTime[0]), 'minutes') > 30) continue;
+
+                    if (!Value.Check(SpotMessage, message)) throw new Error('XML Parse Error: Unexpected Message');
 
                     const feat: Static<typeof Feature.InputFeature> = {
                         id: `spot-${message.messengerId[0]}`,
@@ -139,7 +173,7 @@ export default class Task extends ETL {
                 }
 
                 return features;
-            })(share))
+            })())
         }
 
         const fc: Static<typeof Feature.InputFeatureCollection> = {
@@ -148,7 +182,7 @@ export default class Task extends ETL {
         }
 
         for (const res of await Promise.all(obtains)) {
-            if (!res || !res.length) continue;
+            if (res.length === 0) continue;
             fc.features.push(...res);
         }
 
@@ -157,6 +191,6 @@ export default class Task extends ETL {
 }
 
 await local(await Task.init(import.meta.url), import.meta.url);
-export async function handler(event: Event = {}) {
-    return await internal(await Task.init(import.meta.url), event);
+export async function handler(event: Event = {}): ReturnType<typeof internal> {
+    return internal(await Task.init(import.meta.url), event);
 }
